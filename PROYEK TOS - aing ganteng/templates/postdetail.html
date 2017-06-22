@@ -1,0 +1,342 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>Meddit</title>
+  <!-- Bootstrap core CSS -->
+  <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+  <!-- Custom styles for this template -->
+  <link href="{{ url_for('static', filename='recipe.css') }}" rel="stylesheet">
+  <script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='typeahead.min.js') }}"></script>
+  <script>
+    $(document).ready(function(){
+      var show = sessionStorage.getItem('show');
+      if(show === 'true'){
+        $('#notice').show();
+        sessionStorage.setItem('show','false');
+      }
+      $(function() {
+        $('span.stars').stars();
+      });
+      $('input.typeahead').typeahead({
+        name: 'typeahead',
+        remote:'/search?key=%QUERY',
+        limit : 10
+      });
+
+      $("#login").submit(function(e) {
+
+    var url = "/signin"; // the script where you handle the form input.
+
+    $.ajax({
+     type: "POST",
+     url: url,
+           data: $("#login").serialize(), // serializes the form's elements.
+           success: function(data)
+           {  
+            location.reload(); 
+            sessionStorage.setItem('show', 'true'); //store state in localStorage
+          }
+        });
+
+    e.preventDefault(); // avoid to execute the actual submit of the form.
+  });
+      $("#comment").submit(function(e) {
+
+    var url = "/submitcomment"; // the script where you handle the form input.
+
+    $.ajax({
+     type: "POST",
+     url: url,
+           data: $("#comment").serialize(), // serializes the form's elements.
+           success: function(data)
+           {  
+            location.reload(); 
+          }
+        });
+
+    e.preventDefault(); // avoid to execute the actual submit of the form.
+  });
+     $("#delcomment").submit(function(e) {
+
+    var url = "/deletecomment"; // the script where you handle the form input.
+
+    $.ajax({
+     type: "POST",
+     url: url,
+           data: $("#delcomment").serialize(), // serializes the form's elements.
+           success: function(data)
+           {  
+            location.reload(); 
+          }
+        });
+
+    e.preventDefault(); // avoid to execute the actual submit of the form.
+  });
+      $(".up").on("click",function(){
+        var id = {{ rows["id"] }};
+        var color = $(this).css("color");
+        if(color == "rgb(0, 0, 0)"){
+          $(this).css("color","rgb(0, 150, 0)");
+            $(this).css("border","2px solid green");
+            if($(this).siblings('.down').css("color") != "rgb(0, 0, 0)"){
+             $(this).siblings('.down').css("color","rgb(0, 0, 0)");
+               $(this).siblings('.down').css("border","2px solid #888888");
+               $('#'+id).text(parseInt($('#'+id).text())+parseInt(2));
+             }
+             else{
+              $('#'+id).text(parseInt($('#'+id).text())+parseInt(1));
+            }
+          }
+          else {$(this).css("color","rgb(0, 0, 0)");
+            $(this).css("border","2px solid #888888");
+            $('#'+id).text(parseInt($('#'+id).text())-parseInt(1));
+          }
+        });
+          $(".down").on("click",function(){
+            var id = {{ rows["id"] }};
+            var color = $(this).css("color");
+            if(color == "rgb(0, 0, 0)"){
+              $(this).css("color","rgb(200, 0, 0)");
+                $(this).css("border","2px solid red");
+                if($(this).siblings('.up').css("color") != "rgb(0, 0, 0)"){
+                 $(this).siblings('.up').css("color","rgb(0, 0, 0)");
+                   $(this).siblings('.up').css("border","2px solid #888888");
+                   $('#'+id).text(parseInt($('#'+id).text())-parseInt(2));
+                 }
+                 else{
+                  if(parseInt($('#'+id).text())!=0)
+                    $('#'+id).text(parseInt($('#'+id).text())-parseInt(1));
+                }
+              }
+              else {$(this).css("color","rgb(0, 0, 0)");
+                $(this).css("border","2px solid #888888");
+                $('#'+id).text(parseInt($('#'+id).text())+parseInt(1));
+              }
+            });
+            });
+          </script>
+        </head>
+
+        <body>
+          {% if 'username' not in session %}
+          <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container-fluid">
+              <!-- Brand and toggle get grouped for better mobile display -->
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Meddit</a>
+              </div>
+
+              <!-- Collect the nav links, forms, and other content for toggling -->
+              <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                  <li><a href="/">Hot</a></li>
+                  <li><a href="/fresh">Fresh</a></li>
+                </ul>
+                <form class="navbar-form navbar-left" method="get" action="/result">
+                  <div class="form-group">
+                    <input type="text" name="q" class="typeahead tt-query" autocomplete="off" spellcheck="false" placeholder="Search for users">
+                    <input type="submit" hidden>
+                  </div>
+                </form>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="/register">Register</a></li>
+                  <li><a onclick="document.getElementById('id01').style.display='block'">Sign In</a></li>
+                </ul>
+              </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
+            <div align="center" class="alert alert-danger alert-dismissable fade in" id="notice" style="position:absolute;display:none;width:50%;left:25%;">
+              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+              Invalid username or password.
+            </div>  
+          </nav>
+          <div class="jumbotron" style="background-color: white;">
+            <div class="container">
+              <div class="row">
+                <div class='col-md-12' style='width:600px;left:24%;text-align:left' postid='".$row[0]."'>
+                  <br>
+                  <h2><b><img src="{{ownerimage}}" class="img-circle" width=40 />&nbsp;<a href='/viewprofile?username={{rows["owner"]}}'>{{rows['owner']}}</a></b></h2>
+                  <img src='{{rows["image"]}}' class='img-rounded' style='margin-top:5px;margin-bottom: 5px;' width=600 height=600 />
+                  <button type='button' class='ghost-button-semi-transparent' onclick="document.getElementById('id01').style.display='block'"><span class='glyphicon glyphicon-arrow-up' aria-hidden='true'></span></button>
+                  <button type='button' class='ghost-button-semi-transparent' onclick="document.getElementById('id01').style.display='block'"><span class='glyphicon glyphicon-arrow-down' aria-hidden='true'></span></button>
+                  <h5><div id='{{rows["id"]}}' style='display:inline'>{{val}}</div> points &middot; {{total}} comments</h5> 
+                  <p>{{rows['caption']}}</p>
+                  <h2>Comments</h2>
+                  You must be logged in to comment. <a onclick="document.getElementById('id01').style.display='block'" href="#">Sign in </a>now.<br><br><br>
+                  {% if rowcount == 0 %}
+                  No comments yet.
+                  {% endif %}
+                  {% set i=0 %}
+                  {% for re in res %}
+                  <div class='row'>
+                    <div class='col-md-2'>
+                      <img src='{{image[i]}}' class='img-rounded' width=70/>
+                      <hr>
+                    </div>
+                    <div class='col-md-4'>
+                      <h4 style='display:inline'><b><a href='/viewprofile?username={{re["username"]}}'>{{re["username"]}}</a></b></h4><h6 style='display:inline;color:#999;'> &middot; {{re["commentdate"]}}</h6>
+                      <h5>{{re["content"]}}<h5>
+                      </div>
+                    </div>
+                    {% set i=i+1 %}
+                    {% endfor %}
+                  </div>
+                  <br><br>
+                </div>
+                <br>
+              </div>
+            </div>
+            {% else %}
+            <nav class="navbar navbar-inverse navbar-fixed-top">
+              <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </button>
+                  <a class="navbar-brand" href="/">Meddit</a>
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                  <ul class="nav navbar-nav">
+                   <li><a href="">Hot</a></li>
+                   <li><a href="/fresh">Fresh</a></li>
+                 </ul>
+                 <form class="navbar-form navbar-left" method="get" action="/result">
+                  <div class="form-group">
+                    <input type="text" name="q" class="typeahead tt-query" autocomplete="off" spellcheck="false" placeholder="Search for recipes">
+                    <input type="submit" hidden>
+                  </div>
+                </form>
+                <ul class="nav navbar-nav navbar-right">
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                      <img src="{{session['image']}}" class="img-circle" width=18 />&nbsp;
+                      {{ session['name'] }}
+                      <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/editprofile">Edit Profile</a></li>
+                      <li><a href="/myprofile">My Profile</a></li>
+                      <li role="separator" class="divider"></li>
+                      <li><a href="/changepassword">Change Password</a></li>
+                      <li><a href="/logout">Log Out</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="/upload"><span class="glyphicon glyphicon-plus"></span> Upload</a></li>
+                </ul>
+              </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
+            <div align="center" class="alert alert-success alert-dismissable fade in" id="notice" style="position:absolute;display:none;width:50%;left:25%;">
+              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+              <strong>Success!</strong> You are now logged in as {{ session['name'] }}.
+            </div>  
+          </nav>
+          <div class="jumbotron" style="background-color: white;">
+            <div class="container">
+              <div class="row">
+                <div class='col-md-12' style='width:600px;left:24%;text-align:left' postid='".$row[0]."'>
+                  <br>
+                  <h2><b><img src="{{ownerimage}}" class="img-circle" width=40 />&nbsp;<a href='/viewprofile?username={{rows["owner"]}}'>{{rows['owner']}}</a></b></h2>
+                  <img src='{{rows["image"]}}' class='img-rounded' style='margin-top:5px;margin-bottom: 5px;' width=600 height=600 />
+                  <button type='button' class='ghost-button-semi-transparent up'><span class='glyphicon glyphicon-arrow-up' aria-hidden='true'></span></button>
+                  <button type='button' class='ghost-button-semi-transparent down'><span class='glyphicon glyphicon-arrow-down' aria-hidden='true'></span></button>
+                  <h5><div id='{{rows["id"]}}' style='display:inline'>{{val}}</div> points &middot; {{total}} comments</h5> 
+                  <p>{{rows['caption']}}</p>
+                  <h2>Comments</h2>
+                  <form method="post" action="/submitcomment" id="comment">
+                    <textarea cols = 75 rows = 5 placeholder="Write your comment here..." name="comment" class="img-rounded" style="color:black;"></textarea>
+                    <input type="hidden" value={{ rows["id"] }} name="postid">
+                    <br>
+                    <div style="text-align: right">
+                      <button type="submit" class="ghost-button-semi-transparent" name="submit" style="text-align: right;margin-right:4%">Post Comment</button>
+                    </div>
+                  </form> 
+                  {% if rowcount == 0 %}
+                  No comments yet.
+                  {% endif %}
+                  {% set i=0 %}
+                  {% for re in res %}
+                  <div class='row'>
+                    <div class='col-md-2'>
+                      <img src='{{image[i]}}' class='img-rounded' width=70/>
+                      <hr>
+                    </div>
+                    <div class='col-md-4'>
+                      <h4 style='display:inline'><b><a href='/viewprofile?username={{re["username"]}}'>{{re["username"]}}</a></b></h4><h6 style='display:inline;color:#999;'> &middot; {{re["commentdate"]}}
+                      {% if session['username'] == re['username'] %}
+                    </h6>
+                    {% endif %}
+                    <h5>{{re["content"]}}<h5>
+                    <form id="delcomment" action="/deletecomment" method="post">
+                    <input type="hidden" value="{{re['id']}}" name="id">
+                    <button type="submit" class='btn btn-danger' href="/deletecomment?id={{re['id']}}" style='display:inline;'>Delete Comment</button>
+                    </form>
+                    </div>
+                  </div>
+                  {% set i=i+1 %}
+                  {% endfor %}
+                </div>
+                <br><br>
+              </div>
+              <br>
+            </div>
+          </div>
+          {% endif %}
+          <footer class="footer" id="black">
+            <p>
+              <br>
+              &copy; 2017 Meddit<br>
+              Contact us: admin@Meddit.com
+            </p>
+          </footer>
+          <!-- The Modal -->
+          <div id="id01" class="modal">
+            <form class="modal-content animate" action="/signin" method="post" id="login">
+             <div class="container">
+              <h2>Sign In</h2>
+              <p>Don't have an account yet? <a href="/register">Register.</a>
+                <div class="form-group" style="width:40%">
+                  <label><b>Username</b></label>
+                  <input type="text" class="form-control" placeholder="Enter Username" name="uname" required>
+                </div>
+                <div class="form-group" style="width:40%">
+                  <label><b>Password</b></label>
+                  <input type="password" class="form-control" placeholder="Enter Password" name="pw" required>
+                </div>
+                <button type="submit" class="ghost-button-semi-transparent">Login</button>
+                <button type="button" onclick="document.getElementById('id01').style.display='none'" class="ghost-button-semi-transparent">Cancel</button>
+              </form>
+            </div>
+          </div>
+          <script>
+// Get the modal
+var modal = document.getElementById('id01');
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
+</body>
+</html>

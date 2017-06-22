@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Meddit - Edit Recipe</title>
+  <!-- Bootstrap core CSS -->
+ <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
+  <!-- Custom styles for this template -->
+  <link href="{{ url_for('static', filename='recipe.css') }}" rel="stylesheet">
+  <script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='typeahead.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='validator.js') }}"></script>
+  <script>
+    $(document).ready(function(){
+    $('input.typeahead').typeahead({
+      name: 'typeahead',
+      remote:'/search?key=%QUERY',
+      limit : 10
+    });
+  });
+</script>
+</head>
+
+<body>
+  {% if 'username' in session %}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Meddit</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li><a href="/">Hot</a></li>
+            <li><a href="/fresh">Fresh</a></li>
+          </ul>
+          <form class="navbar-form navbar-left" method="get" action="/result">
+            <div class="form-group">
+              <input type="text" name="q" class="typeahead tt-query" autocomplete="off" spellcheck="false" placeholder="Search for recipes">
+              <input type="submit" hidden>
+            </div>
+          </form>
+          <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+              <img src="{{session['image']}}" class="img-circle" width=18 />&nbsp;
+               {{session['name']}}
+               <span class="caret"></span>
+             </a>
+             <ul class="dropdown-menu">
+              <li><a href="/editprofile">Edit Profile</a></li>
+              <li><a href="/myprofile">My Profile</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="/changepassword">Change Password</a></li>
+              <li><a href="/logout">Log Out</a></li>
+            </ul>
+          </li>
+          <li><a href="/upload"><span class="glyphicon glyphicon-plus"></span> Upload</a></li>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+  <div class="jumbotron" style="color:black;background-color: white;margin-left:33%">
+    <div class="container">
+      <h2>Edit Post</h2>
+      <form action="/updatepost" class="form50" method="post" enctype="multipart/form-data">
+        <input type="hidden" value={{row['id']}} name="postid">
+        <img src='{{row["image"]}}' class='img-rounded' width=600 height=600 />
+        <div class="form-group">
+          <label>Caption</label>
+          <textarea class="form-control" name="caption" placeholder="Caption">{{row['caption']}}</textarea>
+        </div>
+        <br>
+        <button type="submit" class="ghost-button-semi-transparent" name="submit">Submit</button>
+        <a type="button" class="ghost-button-semi-transparent" href="/myprofile">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endif %}
+<script>
+// Get the modal
+var modal = document.getElementById('id01');
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
+</body>
+</html>
